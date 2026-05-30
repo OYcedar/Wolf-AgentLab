@@ -1,0 +1,14 @@
+* text=auto
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.md text eol=lf
+*.py text eol=lf
+*.toml text eol=lf
+*.rs text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.ttf binary
+*.woff binary
+*.exe binary
+*.pyd binary
+*.pdb binary

@@ -1,0 +1,25 @@
+"""持久化层公共导出入口。"""
+
+from .repository import (
+    DB_DIRECTORY,
+    GameMetadata,
+    GameRecord,
+    GameRegistry,
+    RuleReviewStateRecord,
+    TargetGameSession,
+    build_db_path,
+    ensure_db_directory,
+    resolve_default_db_directory,
+)
+
+__all__: list[str] = [
+    "DB_DIRECTORY",
+    "GameMetadata",
+    "GameRecord",
+    "GameRegistry",
+    "RuleReviewStateRecord",
+    "TargetGameSession",
+    "build_db_path",
+    "ensure_db_directory",
+    "resolve_default_db_directory",
+]

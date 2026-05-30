@@ -1,0 +1,47 @@
+# Local game inputs and generated outputs
+/game/*
+/workspace/*
+/patches/*
+
+# Third-party binaries are installed locally, not committed.
+/tools/*
+
+# Keep directory docs/placeholders if added later.
+!/game/.gitkeep
+!/workspace/.gitkeep
+!/patches/.gitkeep
+!/tools/README.md
+
+# Python and tooling caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Rust/build output
+target/
+dist/
+
+# Logs and temp files
+logs/
+tmp/
+outputs/
+
+# Local secrets and machine-specific settings
+setting.toml
+wolf-source/setting.toml
+
+# Copied att-mz documentation/skills are not part of the public Wolf project yet.
+wolf-source/docs/
+wolf-source/skills/
+wolf-source/tests/test_skill_protocol.py
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+.codex/

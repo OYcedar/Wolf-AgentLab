@@ -1,0 +1,96 @@
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag, for example v0.1.0"
+        required: true
+        type: string
+      prerelease:
+        description: "Mark as prerelease"
+        required: false
+        default: false
+        type: boolean
+      draft:
+        description: "Create as draft"
+        required: false
+        default: false
+        type: boolean
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    name: Build Windows release
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    defaults:
+      run:
+        working-directory: wolf-source
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v8.1.0
+        with:
+          enable-cache: true
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Resolve release metadata
+        id: meta
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $tag = "${{ inputs.tag }}"
+          }
+          if ([string]::IsNullOrWhiteSpace($tag)) {
+            throw "Missing release tag"
+          }
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "zip_name=att-wolf-windows-x86_64.zip" >> $env:GITHUB_OUTPUT
+
+      - name: Install project dependencies
+        shell: pwsh
+        run: uv sync --locked --dev
+
+      - name: Test
+        shell: pwsh
+        run: uv run pytest tests/test_wolf_pipeline.py tests/test_cli_json_output.py::test_parser_commands_have_dispatch_handlers -q
+
+      - name: Build release zip
+        shell: pwsh
+        run: uv run python scripts/build_release.py --zip-name "${{ steps.meta.outputs.zip_name }}"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.meta.outputs.zip_name }}
+          path: wolf-source/dist/${{ steps.meta.outputs.zip_name }}
+          if-no-files-found: error
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: att-wolf ${{ steps.meta.outputs.tag }}
+          files: wolf-source/dist/${{ steps.meta.outputs.zip_name }}
+          draft: ${{ github.event_name == 'workflow_dispatch' && inputs.draft || false }}
+          prerelease: ${{ github.event_name == 'workflow_dispatch' && inputs.prerelease || false }}
+          generate_release_notes: true
