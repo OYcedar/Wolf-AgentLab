@@ -14,6 +14,7 @@ from app.wolf.dump_loader import build_location_path
 from app.wolf.extraction import extract_wolf_translation_data_map, wolf_default_placeholder_rules
 from app.wolf.layout import is_wolf_engine_version_unsupported, iter_wolf_archives, parse_wolf_engine_version
 from app.wolf.runtime_audit import audit_wolf_runtime_translations, collect_runtime_sensitive_string_paths
+from app.wolf.service import _harden_wolf_pro_runtime
 from app.wolf.tools import WolfToolPaths
 from app.wolf.wolftl import WolfTLRunResult
 from app.wolf.write_back import write_wolf_translations
@@ -265,3 +266,33 @@ def test_prepare_game_falls_back_from_uberwolf_to_wolfdec_when_wolftl_parse_fail
     assert result.attempts[1].ok is True
     assert result.dump_dir is not None
     assert (result.dump_dir / "Game.json").is_file()
+
+
+def test_wolf_pro_runtime_hardening_sets_software_mode_and_cjk_font(tmp_path: Path) -> None:
+    patch_dir = tmp_path / "patch"
+    basic_data = patch_dir / "Data" / "BasicData"
+    basic_data.mkdir(parents=True)
+    (patch_dir / "Game.ini").write_text(
+        "SoftModeFlag=0\r\n"
+        "Old_DirectX_Use=0\r\n"
+        "MainText_to_ClipBoard=1\r\n"
+        "SelectedText_to_ClipBoard_F2=1\r\n",
+        encoding="mbcs",
+    )
+    game_dat = basic_data / "Game.dat"
+    old_main = "ＭＳ ゴシック".encode("utf-8") + b"\x00"
+    old_title = b"Arial Black\x00"
+    game_dat.write_bytes(b"head" + old_main + b"mid" + old_title + b"tail")
+
+    result = _harden_wolf_pro_runtime(patch_dir)
+
+    assert result["game_ini_updated"] is True
+    ini = (patch_dir / "Game.ini").read_text(encoding="mbcs")
+    assert "SoftModeFlag=1" in ini
+    assert "Old_DirectX_Use=1" in ini
+    assert "MainText_to_ClipBoard=0" in ini
+    patched = game_dat.read_bytes()
+    assert b"SimHei\x00" in patched
+    assert "ＭＳ ゴシック".encode("utf-8") not in patched
+    assert b"Arial Black" not in patched
+    assert game_dat.stat().st_size == len(b"head" + old_main + b"mid" + old_title + b"tail")

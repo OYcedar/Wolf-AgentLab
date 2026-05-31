@@ -400,12 +400,14 @@ class WolfService:
                 '@echo off\r\ncd /d "%~dp0"\r\nstart "" GamePro.exe\r\n',
                 encoding="mbcs",
             )
+        hardening = _harden_wolf_pro_runtime(patch_dir)
         return AgentReport.from_parts(
             errors=[],
             warnings=[],
             summary={
                 "patch_dir": str(patch_dir),
                 "runtime_files": runtime_files,
+                "runtime_hardening": hardening,
             },
             details={},
         )
@@ -548,11 +550,64 @@ def _collect_placeholder_errors(
 _WOLF_PRO_RUNTIME_FILES = (
     "GamePro.exe",
     "EditorPro.exe",
+    "Game.ini",
+    "GuruguruSMF4.dll",
     "LGBaseFont.ttf",
     "fontsoul.ttf",
     "Onryou.ttf",
     "AkazukinPop.ttf",
 )
+
+
+def _harden_wolf_pro_runtime(patch_dir: Path) -> dict[str, Any]:
+    """Apply runtime settings proven necessary for Pro-converted Wolf patches."""
+    changes: dict[str, Any] = {
+        "game_ini_updated": False,
+        "game_dat_font_replacements": [],
+    }
+    game_ini = patch_dir / "Game.ini"
+    if game_ini.is_file():
+        ini_lines = game_ini.read_text(encoding="mbcs").splitlines()
+        replacements = {
+            "SoftModeFlag": "1",
+            "Old_DirectX_Use": "1",
+            "MainText_to_ClipBoard": "0",
+            "SelectedText_to_ClipBoard_F2": "0",
+        }
+        seen: set[str] = set()
+        updated_lines: list[str] = []
+        for line in ini_lines:
+            key = line.split("=", 1)[0] if "=" in line else ""
+            if key in replacements:
+                updated_lines.append(f"{key}={replacements[key]}")
+                seen.add(key)
+            else:
+                updated_lines.append(line)
+        for key, value in replacements.items():
+            if key not in seen:
+                updated_lines.append(f"{key}={value}")
+        game_ini.write_text("\r\n".join(updated_lines) + "\r\n", encoding="mbcs")
+        changes["game_ini_updated"] = True
+
+    game_dat = patch_dir / "Data" / "BasicData" / "Game.dat"
+    if game_dat.is_file():
+        data = bytearray(game_dat.read_bytes())
+        replaced: list[str] = []
+        for old in ("ＭＳ ゴシック", "Arial Black"):
+            old_bytes = old.encode("utf-8") + b"\x00"
+            index = data.find(old_bytes)
+            if index < 0:
+                continue
+            new_bytes = b"SimHei\x00"
+            if len(new_bytes) > len(old_bytes):
+                continue
+            padded = new_bytes + (b"\x00" * (len(old_bytes) - len(new_bytes)))
+            data[index : index + len(old_bytes)] = padded
+            replaced.append(old)
+        if replaced:
+            game_dat.write_bytes(data)
+            changes["game_dat_font_replacements"] = replaced
+    return changes
 
 
 def _load_feedback_snippets(input_path: Path) -> list[str]:
