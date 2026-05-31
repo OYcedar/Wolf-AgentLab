@@ -371,10 +371,12 @@ class WolfService:
         """Copy the latest WolfTL patched Data into G:\\wolf\\patches."""
         async with await self.game_registry.open_game(game_title) as session:
             self._require_wolf(session.engine_kind)
+            game_dir = session.game_path
             prepared = require_prepared_wolf_game(session.game_title)
         patched_root = prepared.workspace_dir / TRANSLATED_OUTPUT_DIR_NAME / "patched"
-        patched_data_dir = patched_root / "Data"
-        if not patched_data_dir.is_dir():
+        active_data_dir = game_dir / "Data"
+        patched_data_dir = active_data_dir if active_data_dir.is_dir() else patched_root / "Data"
+        if not patched_data_dir.is_dir() and (patched_root / "data").is_dir():
             patched_data_dir = patched_root / "data"
         if not patched_data_dir.is_dir():
             return AgentReport.from_parts(
@@ -387,11 +389,23 @@ class WolfService:
         if patch_dir.exists():
             shutil.rmtree(patch_dir)
         shutil.copytree(patched_data_dir, patch_dir / "Data")
+        runtime_files: list[str] = []
+        for name in _WOLF_PRO_RUNTIME_FILES:
+            source = game_dir / name
+            if source.is_file():
+                shutil.copy2(source, patch_dir / name)
+                runtime_files.append(name)
+        if (patch_dir / "GamePro.exe").is_file():
+            (patch_dir / "启动汉化版.bat").write_text(
+                '@echo off\r\ncd /d "%~dp0"\r\nstart "" GamePro.exe\r\n',
+                encoding="mbcs",
+            )
         return AgentReport.from_parts(
             errors=[],
             warnings=[],
             summary={
                 "patch_dir": str(patch_dir),
+                "runtime_files": runtime_files,
             },
             details={},
         )
@@ -529,6 +543,16 @@ def _collect_placeholder_errors(
                 }
             )
     return errors
+
+
+_WOLF_PRO_RUNTIME_FILES = (
+    "GamePro.exe",
+    "EditorPro.exe",
+    "LGBaseFont.ttf",
+    "fontsoul.ttf",
+    "Onryou.ttf",
+    "AkazukinPop.ttf",
+)
 
 
 def _load_feedback_snippets(input_path: Path) -> list[str]:
