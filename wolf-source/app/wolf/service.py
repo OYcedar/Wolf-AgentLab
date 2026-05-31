@@ -12,10 +12,11 @@ from app.agent_toolkit import AgentReport
 from app.agent_toolkit.reports import AgentIssue, issue
 from app.config.schemas import Setting
 from app.persistence import GameRegistry
-from app.rmmz.control_codes import CustomPlaceholderRule
+from app.rmmz.control_codes import CustomPlaceholderRule, REAL_LINE_BREAK_MARKER, REAL_LINE_BREAK_PLACEHOLDER
 from app.rmmz.json_types import JsonObject
 from app.rmmz.schema import TranslationItem
 from app.rmmz.text_rules import TextRules
+from app.translation.verify import _mask_known_translation_controls
 from app.utils.config_loader_utils import load_setting
 from app.wolf.dec import (
     PrepareGameResult,
@@ -371,7 +372,10 @@ class WolfService:
         async with await self.game_registry.open_game(game_title) as session:
             self._require_wolf(session.engine_kind)
             prepared = require_prepared_wolf_game(session.game_title)
-        patched_data_dir = prepared.workspace_dir / TRANSLATED_OUTPUT_DIR_NAME / "patched" / "data"
+        patched_root = prepared.workspace_dir / TRANSLATED_OUTPUT_DIR_NAME / "patched"
+        patched_data_dir = patched_root / "Data"
+        if not patched_data_dir.is_dir():
+            patched_data_dir = patched_root / "data"
         if not patched_data_dir.is_dir():
             return AgentReport.from_parts(
                 errors=[issue("patched_data_missing", "No patched Data found. Run write-back first.")],
@@ -507,7 +511,15 @@ def _collect_placeholder_errors(
         check_item = item.model_copy(deep=True)
         try:
             check_item.build_placeholders(text_rules)
-            check_item.translation_lines_with_placeholders = list(check_item.translation_lines)
+            check_item.translation_lines_with_placeholders = _mask_known_translation_controls(
+                item=check_item,
+                translation_lines=check_item.translation_lines,
+                text_rules=text_rules,
+            )
+            check_item.translation_lines_with_placeholders = [
+                line.replace(REAL_LINE_BREAK_MARKER, REAL_LINE_BREAK_PLACEHOLDER)
+                for line in check_item.translation_lines_with_placeholders
+            ]
             check_item.verify_placeholders(text_rules)
         except Exception as error:
             errors.append(

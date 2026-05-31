@@ -38,9 +38,6 @@ def run_wolftl_create(*, wolftl_path: Path, data_dir: Path, output_dir: Path) ->
 
 def run_wolftl_patch(*, wolftl_path: Path, data_dir: Path, output_dir: Path) -> WolfTLRunResult:
     """Run ``WolfTL patch`` using ``output_dir/dump`` as the edited dump."""
-    patched_dir = output_dir / "patched"
-    if patched_dir.exists():
-        shutil.rmtree(patched_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     return _run_wolftl(wolftl_path, data_dir, output_dir, "patch")
 
@@ -64,7 +61,10 @@ def require_wolftl_dump(output_dir: Path) -> Path:
 
 
 def _run_wolftl(wolftl_path: Path, data_dir: Path, output_dir: Path, mode: str) -> WolfTLRunResult:
-    command = [str(wolftl_path), str(data_dir), str(output_dir), mode]
+    operation = {"create": "--create", "patch": "--patch"}[mode]
+    command = [str(wolftl_path), str(data_dir), str(output_dir), operation]
+    if mode == "patch":
+        command.append("--inplace")
     completed = subprocess.run(
         command,
         cwd=str(output_dir.parent),

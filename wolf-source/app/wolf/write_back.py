@@ -74,9 +74,14 @@ def write_wolf_translations(
             f"{first.location_path} ({first.reason})"
         )
 
+    patched_data_dir = translated_output_dir / "patched" / "Data"
+    if patched_data_dir.parent.exists():
+        shutil.rmtree(patched_data_dir.parent)
+    shutil.copytree(data_dir, patched_data_dir)
+
     patch_result = run_wolftl_patch(
         wolftl_path=wolftl_path,
-        data_dir=data_dir,
+        data_dir=patched_data_dir,
         output_dir=translated_output_dir,
     )
     if not patch_result.ok:
@@ -84,7 +89,6 @@ def write_wolf_translations(
             "WolfTL patch failed: "
             + (patch_result.stderr.strip() or patch_result.stdout.strip() or str(patch_result.returncode))
         )
-    patched_data_dir = translated_output_dir / "patched" / "data"
     if not patched_data_dir.is_dir():
         raise FileNotFoundError(f"WolfTL patch did not create patched data: {patched_data_dir}")
     return WolfWriteBackResult(
