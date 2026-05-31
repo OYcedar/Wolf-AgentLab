@@ -151,7 +151,7 @@ def test_wolf_runtime_audit_flags_labels_resources_events_and_parameter_keywords
     assert issues[0].reason == "label"
 
 
-def test_write_back_changes_only_translation_strings_and_restores_runtime_values(
+def test_write_back_changes_only_safe_translation_strings(
     tmp_path: Path,
     monkeypatch: MonkeyPatch,
 ) -> None:
@@ -162,6 +162,8 @@ def test_write_back_changes_only_translation_strings_and_restores_runtime_values
     workspace_dir = tmp_path / "workspace"
     message_path = build_location_path("common", "common/001.json", "/commands/0/stringArgs/0")
     label_path = build_location_path("common", "common/001.json", "/commands/2/stringArgs/0")
+    db_field_path = build_location_path("db", "db/DataBase.json", "/types/0/fields/0/name")
+    db_value_path = build_location_path("db", "db/DataBase.json", "/types/0/data/0/name")
 
     def fake_patch(*, wolftl_path: Path, data_dir: Path, output_dir: Path) -> WolfTLRunResult:
         patched_data = output_dir / "patched" / "data"
@@ -189,16 +191,33 @@ def test_write_back_changes_only_translation_strings_and_restores_runtime_values
                 source_line_paths=[label_path],
                 translation_lines=["结束"],
             ),
+            TranslationItem(
+                location_path=db_field_path,
+                item_type="short_text",
+                original_lines=["説明"],
+                source_line_paths=[db_field_path],
+                translation_lines=["说明"],
+            ),
+            TranslationItem(
+                location_path=db_value_path,
+                item_type="short_text",
+                original_lines=["カフェイン値"],
+                source_line_paths=[db_value_path],
+                translation_lines=["咖啡因值"],
+            ),
         ],
     )
 
     written = json.loads((workspace_dir / "translated_wolftl" / "dump" / "common" / "001.json").read_text(encoding="utf-8"))
+    written_db = json.loads((workspace_dir / "translated_wolftl" / "dump" / "db" / "DataBase.json").read_text(encoding="utf-8"))
     assert written["commands"][0]["stringArgs"][0] == "你好\\s[9]君"
     assert written["commands"][0]["intArgs"] == [1]
     assert written["commands"][2]["stringArgs"][0] == "終了"
     assert written["commands"][2]["intArgs"] == [3]
+    assert written_db["types"][0]["fields"][0]["name"] == "説明"
+    assert written_db["types"][0]["data"][0]["name"] == "咖啡因值"
     assert result.written_item_count == 2
-    assert result.restored_runtime_string_count == 1
+    assert result.restored_runtime_string_count == 0
 
 
 def test_prepare_game_falls_back_from_uberwolf_to_wolfdec_when_wolftl_parse_fails(

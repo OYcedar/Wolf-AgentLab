@@ -13,6 +13,8 @@ The project is built around `att-wolf`, a CLI adapted from the A.T.T tooling lin
 7. Patch back through WolfTL.
 8. Generate and finalize a clean patch package.
 
+For old Wolf games, insert the Pro conversion gate before write-back: unpack the original `Data.wolf`, remove every `.wolf` from the game directory, run `EditorPro.exe` until `Backup_Before_Ver3\ConvertLog.txt` records successful conversion, then re-dump the converted `Data` and patch that converted dump. Do not patch a pre-conversion dump into a converted `Data` directory.
+
 ## Repository Layout
 
 ```text
@@ -95,6 +97,8 @@ Before write-back, the workflow runs or expects:
 - Real game-window QA before release.
 
 Runtime-sensitive strings are protected by default, including labels, common-event names, resource paths, map references, database internal IDs, common-event parameter keywords, and control tokens such as `\s[9]`, `\cself[...]`, `\self[...]`, `\v[...]`, `\i[...]`, and `<管理番号...>`.
+
+Wolf database structure names are not translated by default. Keep `types/*/fields/*`, `types/*/name`, and `types/*/description` intact unless a game-specific whitelist has been tested in the real game window.
 
 ## Development Checks
 

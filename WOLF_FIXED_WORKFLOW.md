@@ -42,6 +42,25 @@ G:\wolf\att-wolf-auto.bat -GameTitle "<游戏标题>" -RunFullTranslation -SkipL
 
 ## 4. 写回闸门
 
+### Pro/Ver3 转换闸门
+
+对老版 Wolf 游戏，写回前必须先完成 Pro 转换：
+
+1. 从原版 `Data.wolf` 解包出干净 `Data`。
+2. 把 `Data.wolf` 移到游戏目录外。
+3. 复制 `GamePro.exe` / `EditorPro.exe` 到游戏目录。
+4. 打开 `EditorPro.exe`，点击 `コンバート(データ変換)`。
+5. 依次处理所有确认窗口，包括：
+   - Ver3 风险确认。
+   - 开始备份确认。
+   - 备份完成确认。
+   - 开始文件转换确认。
+   - 文件转换完成确认。
+6. 确认 `Backup_Before_Ver3\ConvertLog.txt` 存在，且没有 `エラー` / `失敗`。
+7. 转换结束后重新对当前游戏目录 `Data` 执行 WolfTL create。
+
+只有基于“转换后的 Data dump”写入译文才有效。不要复用转换前 dump 写回；否则会出现游戏能启动但文本仍是日文。
+
 写回前手动确认：
 
 ```powershell
@@ -65,6 +84,13 @@ uv run python main.py --agent-mode dump-text --game "<游戏标题>" --json
 ```
 
 WolfTL 重新解析失败时，不发布补丁。
+
+数据库固定规则：
+
+- 默认不翻译 `types/*/fields/*`、`types/*/name`、`types/*/description`。
+- 数据库内部键名和字段名即使可见也先保留原文。
+- 若要翻译物品、技能、状态等数据库显示文本，必须走白名单并重新启动游戏验证。
+- 如果 WolfTL patch 输出 `Data field name mismatch`，说明数据库结构名被翻译或 dump 基底不一致，必须回滚 DB 结构译文。
 
 ## 5. 发布 QA
 

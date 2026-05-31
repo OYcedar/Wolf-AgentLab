@@ -74,8 +74,10 @@ def _run_wolftl(wolftl_path: Path, data_dir: Path, output_dir: Path, mode: str) 
         capture_output=True,
         check=False,
     )
+    output_text = f"{completed.stdout}\n{completed.stderr}"
+    has_processing_error = "Error while processing:" in output_text or "Data::Patch()" in output_text
     return WolfTLRunResult(
-        ok=completed.returncode == 0,
+        ok=completed.returncode == 0 and not has_processing_error,
         command=command,
         returncode=completed.returncode,
         stdout=completed.stdout,

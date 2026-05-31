@@ -126,6 +126,7 @@ from app.wolf.extraction import extract_wolf_translation_data_map, wolf_default_
 from app.wolf.layout import iter_wolf_archives
 from app.wolf.runtime_audit import audit_wolf_runtime_translations
 from app.wolf.tools import resolve_wolf_tool_paths
+from app.wolf.wolftl import run_wolftl_create
 from app.wolf.write_back import write_wolf_translations
 
 
@@ -1049,10 +1050,30 @@ class TranslationHandler:
                         ".wolf archives still exist under the game directory; move them out before write-back "
                         f"so the game loads patched Data. First archive: {first_archive}"
                     )
+                active_data_dir = session.game_path / "Data"
+                data_dir = active_data_dir if active_data_dir.is_dir() else prepared.data_dir
+                source_dump_dir = prepared.dump_dir
+                if active_data_dir.is_dir():
+                    current_dump_output_dir = prepared.workspace_dir / "current_wolftl_before_write_back"
+                    current_dump_result = run_wolftl_create(
+                        wolftl_path=tools.wolftl,
+                        data_dir=active_data_dir,
+                        output_dir=current_dump_output_dir,
+                    )
+                    if not current_dump_result.ok:
+                        raise RuntimeError(
+                            "WolfTL create failed for current game Data before write-back: "
+                            + (
+                                current_dump_result.stderr.strip()
+                                or current_dump_result.stdout.strip()
+                                or str(current_dump_result.returncode)
+                            )
+                        )
+                    source_dump_dir = current_dump_output_dir / "dump"
                 set_progress(0, len(translated_items))
                 result = write_wolf_translations(
-                    source_dump_dir=prepared.dump_dir,
-                    data_dir=prepared.data_dir,
+                    source_dump_dir=source_dump_dir,
+                    data_dir=data_dir,
                     workspace_dir=prepared.workspace_dir,
                     wolftl_path=tools.wolftl,
                     translated_items=translated_items,

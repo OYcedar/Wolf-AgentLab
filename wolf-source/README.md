@@ -66,6 +66,21 @@ G:\wolf\att-wolf-auto.bat -GamePath "G:\wolf\game\<游戏目录>" -PrepareOnly
 
 `doctor` 会尝试读取 `GamePro.exe` / `Game.exe` 的文件版本。版本不低于 `3.595` 时会给出兼容性风险提示。
 
+## Pro 转换固定流程
+
+老版 Wolf 游戏不能把 WolfDec 解出的明文 `Data` 直接交给旧 `Game.exe` 运行。标准流程必须是：
+
+1. 用原版 `Data.wolf` 重新解包出干净 `Data`。
+2. 把 `Data.wolf` 移出游戏目录，确保目录内不再有 `.wolf`。
+3. 放入 `GamePro.exe` / `EditorPro.exe`，之后一律用 `GamePro.exe` 启动。
+4. 打开 `EditorPro.exe`，依次确认风险提示、备份提示、开始转换提示，直到 `Backup_Before_Ver3\ConvertLog.txt` 出现并记录 `変換OK`。
+5. 转换完成后必须重新运行 WolfTL create，以“转换后的 Data”作为新的 dump 基底。
+6. 再把数据库里的译文写入这个新 dump，然后 WolfTL patch 回转换后的 `Data`。
+
+不要把“转换前 dump”直接 patch 到“转换后 Data”。转换会覆盖旧写入，或者让 WolfTL 因结构差异静默不落盘。
+
+数据库写回默认只写安全字段。`types/*/fields/*`、`types/*/name`、`types/*/description` 等数据库结构名保持日文原样；这些名字经常被公共事件当运行键使用，翻译后会触发 `data name does not exist` 或 `Data field name mismatch`。
+
 ## Wolf 运行安全
 
 默认不会把这些内容送入正文翻译：
