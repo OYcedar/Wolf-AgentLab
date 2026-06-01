@@ -396,8 +396,12 @@ class WolfService:
                 shutil.copy2(source, patch_dir / name)
                 runtime_files.append(name)
         if (patch_dir / "GamePro.exe").is_file():
+            shutil.copy2(patch_dir / "GamePro.exe", patch_dir / "Game.exe")
+            if "Game.exe" not in runtime_files:
+                runtime_files.append("Game.exe")
+        if (patch_dir / "GamePro.exe").is_file():
             (patch_dir / "启动汉化版.bat").write_text(
-                '@echo off\r\ncd /d "%~dp0"\r\nstart "" GamePro.exe\r\n',
+                '@echo off\r\ncd /d "%~dp0"\r\nstart "" Game.exe\r\n',
                 encoding="mbcs",
             )
         hardening = _harden_wolf_pro_runtime(patch_dir)
