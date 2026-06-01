@@ -388,7 +388,7 @@ class DoctorAgentMixin:
                 warnings.append(
                     issue(
                         "wolf_runtime_missing",
-                        "高版本 WOLF Editor/Game 目录未找到；请运行 scripts/install_wolf_runtime.ps1，或配置 wolf_runtime_dir / ATT_WOLF_RUNTIME_DIR",
+                        "高版本 WOLF Editor/Game 目录未找到；请确认仓库 tools\\wolf-runtime 存在，或配置 wolf_runtime_dir / ATT_WOLF_RUNTIME_DIR",
                     )
                 )
         else:
@@ -480,7 +480,7 @@ class DoctorAgentMixin:
                 warnings.append(
                     issue(
                         "wolf_runtime_missing",
-                        "高版本 WOLF Editor/Game 目录未找到；老版数据转换前请运行 scripts/install_wolf_runtime.ps1 或配置 wolf_runtime_dir",
+                        "高版本 WOLF Editor/Game 目录未找到；老版数据转换前请确认仓库 tools\\wolf-runtime 存在或配置 wolf_runtime_dir",
                     )
                 )
             else:

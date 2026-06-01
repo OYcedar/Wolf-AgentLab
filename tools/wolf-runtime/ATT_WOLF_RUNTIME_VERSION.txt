@@ -1,0 +1,4 @@
+version=3.703
+edition=mini
+source=https://github.com/smokingwolf/tool_wolf_rpg_editor/releases/download/v3.703/WolfRPGEditor_3.703_mini.zip
+installed_at=2026-06-01T13:49:45.1918890+08:00

@@ -11,6 +11,8 @@
 !/workspace/.gitkeep
 !/patches/.gitkeep
 !/tools/README.md
+!/tools/wolf-runtime/
+!/tools/wolf-runtime/**
 
 # Python and tooling caches
 __pycache__/

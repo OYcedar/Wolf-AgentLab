@@ -29,7 +29,6 @@ app/_native*.pdb
 logs/
 scripts/*
 !scripts/build_release.py
-!scripts/install_wolf_runtime.ps1
 
 
 

@@ -8,18 +8,11 @@
 - `G:\wolf\game`：待翻译 Wolf 游戏。
 - `G:\wolf\workspace`：每个游戏的解包、WolfTL dump、翻译缓存和质量报告。
 - `G:\wolf\patches`：输出的独立汉化补丁。
-- `G:\wolf\tools`：放 `WolfTL.exe`、`UberWolf.exe`、`WolfDec.exe`，以及仓库准备的高版本 WOLF 运行/编辑器目录 `wolf-runtime`。
+- `G:\wolf\tools`：放 `WolfTL.exe`、`UberWolf.exe`、`WolfDec.exe`，并随仓库固定高版本 WOLF 运行/编辑器目录 `wolf-runtime`。
 
 工具路径也可以写入 `setting.toml` 的 `[wolf_tools]`，或通过环境变量 `ATT_WOLF_WOLFTL_PATH`、`ATT_WOLF_UBERWOLF_PATH`、`ATT_WOLF_WOLFDEC_PATH`、`ATT_WOLF_RUNTIME_DIR` 指定。
 
-首次准备工具时，先把官方高版本 WOLF 固定到本机工具目录：
-
-```powershell
-Set-Location G:\wolf\wolf-source
-.\scripts\install_wolf_runtime.ps1 -Force
-```
-
-脚本默认从官方 GitHub Release 下载当前固定版本 `v3.703` 的 `mini` 包，整理到 `G:\wolf\tools\wolf-runtime`。如果你已经购买并安装 Pro 版，可以把 `wolf_runtime_dir` 或 `ATT_WOLF_RUNTIME_DIR` 指向含 `EditorPro.exe` / `GamePro.exe` 的目录。
+仓库内置的 `G:\wolf\tools\wolf-runtime` 固定为 WOLF RPG Editor `v3.703 mini`。如果你要使用 Pro 版，可以把 `wolf_runtime_dir` 或 `ATT_WOLF_RUNTIME_DIR` 指向含 `EditorPro.exe` / `GamePro.exe` 的目录。
 
 ## 主流程
 

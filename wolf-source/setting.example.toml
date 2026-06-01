@@ -46,7 +46,7 @@ wolftl_path = ""
 uberwolf_path = ""
 wolfdec_path = ""
 # High-version WOLF Editor/Game directory used as the stable conversion/runtime base.
-# Run scripts/install_wolf_runtime.ps1 to populate G:\wolf\tools\wolf-runtime.
+# Empty means the repository-bundled G:\wolf\tools\wolf-runtime is used.
 wolf_runtime_dir = ""
 
 [text_rules]
