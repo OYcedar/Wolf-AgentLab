@@ -551,7 +551,6 @@ _WOLF_PRO_RUNTIME_FILES = (
     "GamePro.exe",
     "EditorPro.exe",
     "Game.ini",
-    "GuruguruSMF4.dll",
     "LGBaseFont.ttf",
     "fontsoul.ttf",
     "Onryou.ttf",
