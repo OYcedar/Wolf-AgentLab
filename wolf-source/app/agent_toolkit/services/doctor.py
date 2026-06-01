@@ -339,6 +339,7 @@ class DoctorAgentMixin:
             "wolftl": str(tools.wolftl) if tools.wolftl is not None else "",
             "uberwolf": str(tools.uberwolf) if tools.uberwolf is not None else "",
             "wolfdec": str(tools.wolfdec) if tools.wolfdec is not None else "",
+            "wolf_runtime_dir": str(tools.runtime_dir) if tools.runtime_dir is not None else "",
         }
         summary["game_registered"] = True
         summary["engine_kind"] = "wolf"
@@ -382,6 +383,16 @@ class DoctorAgentMixin:
                     warnings.append(issue("wolfdec_missing", "WolfDec.exe 未找到；UberWolf 解析失败时无法 fallback"))
         else:
             _append_check(details, "wolfdec", "ok")
+        if tools.runtime_dir is None:
+            if not _has_issue(warnings, "wolf_runtime_missing"):
+                warnings.append(
+                    issue(
+                        "wolf_runtime_missing",
+                        "高版本 WOLF Editor/Game 目录未找到；请运行 scripts/install_wolf_runtime.ps1，或配置 wolf_runtime_dir / ATT_WOLF_RUNTIME_DIR",
+                    )
+                )
+        else:
+            _append_check(details, "wolf_runtime", "ok")
 
         try:
             prepared = require_prepared_wolf_game(session.game_title)
@@ -453,6 +464,7 @@ class DoctorAgentMixin:
                     "wolftl": str(tools.wolftl) if tools.wolftl is not None else "",
                     "uberwolf": str(tools.uberwolf) if tools.uberwolf is not None else "",
                     "wolfdec": str(tools.wolfdec) if tools.wolfdec is not None else "",
+                    "wolf_runtime_dir": str(tools.runtime_dir) if tools.runtime_dir is not None else "",
                 },
             )
             if tools.wolftl is None:
@@ -464,6 +476,15 @@ class DoctorAgentMixin:
                     errors.append(issue("wolf_unpacker_missing", "UberWolf.exe 和 WolfDec.exe 都未找到，无法解包 .wolf 游戏"))
                 else:
                     warnings.append(issue("wolfdec_missing", "WolfDec.exe 未找到；UberWolf 失败时无法 fallback"))
+            if tools.runtime_dir is None:
+                warnings.append(
+                    issue(
+                        "wolf_runtime_missing",
+                        "高版本 WOLF Editor/Game 目录未找到；老版数据转换前请运行 scripts/install_wolf_runtime.ps1 或配置 wolf_runtime_dir",
+                    )
+                )
+            else:
+                _append_check(details, "wolf_runtime", "ok")
         except Exception as error:
             warnings.append(issue("wolf_tools", f"Wolf 工具链检查失败: {type(error).__name__}: {error}"))
 

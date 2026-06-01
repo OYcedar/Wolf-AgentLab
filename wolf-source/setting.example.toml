@@ -41,10 +41,13 @@ mz = [357]
 replacement_font_path = "fonts/NotoSansSC-Regular.ttf"
 
 [wolf_tools]
-# Optional. If empty, att-wolf checks G:\wolf\tools and ATT_WOLF_*_PATH env vars.
+# Optional. If empty, att-wolf checks G:\wolf\tools and ATT_WOLF_* env vars.
 wolftl_path = ""
 uberwolf_path = ""
 wolfdec_path = ""
+# High-version WOLF Editor/Game directory used as the stable conversion/runtime base.
+# Run scripts/install_wolf_runtime.ps1 to populate G:\wolf\tools\wolf-runtime.
+wolf_runtime_dir = ""
 
 [text_rules]
 strip_wrapping_punctuation_pairs = [["「", "」"]]

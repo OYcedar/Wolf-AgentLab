@@ -135,6 +135,7 @@ class WolfToolsSetting(StrictBaseModel):
     wolftl_path: str | None = Field(default=None, title="WolfTL.exe 路径")
     uberwolf_path: str | None = Field(default=None, title="UberWolf.exe 路径")
     wolfdec_path: str | None = Field(default=None, title="WolfDec.exe 路径")
+    wolf_runtime_dir: str | None = Field(default=None, title="高版本 WOLF Editor/Game 目录")
 
 
 class TextRulesSetting(StrictBaseModel):

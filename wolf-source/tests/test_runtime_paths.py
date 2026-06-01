@@ -13,6 +13,7 @@ from app.config.custom_placeholder_rules import resolve_custom_placeholder_rules
 from app.observability import resolve_log_file_path
 from app.persistence import GameRegistry, build_db_path, resolve_default_db_directory
 from app.utils.config_loader_utils import resolve_setting_path
+from app.wolf.tools import is_wolf_runtime_dir, resolve_wolf_tool_paths
 
 
 def test_app_home_uses_environment_override(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -84,3 +85,19 @@ def test_relative_replacement_font_uses_app_home(monkeypatch: pytest.MonkeyPatch
     monkeypatch.setenv(runtime_paths.APP_HOME_ENV_NAME, str(tmp_path))
 
     assert resolve_replacement_font_path("fonts/Test.ttf") == font_path.resolve()
+
+
+def test_wolf_runtime_dir_resolves_from_tools_root(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """高版本 WOLF 运行库默认从 tools/wolf-runtime 解析。"""
+    monkeypatch.setenv(runtime_paths.APP_HOME_ENV_NAME, str(tmp_path))
+    monkeypatch.delenv("ATT_WOLF_TOOLS", raising=False)
+    monkeypatch.delenv("ATT_WOLF_RUNTIME_DIR", raising=False)
+    runtime_dir = tmp_path / "tools" / "wolf-runtime"
+    runtime_dir.mkdir(parents=True)
+    _ = (runtime_dir / "Editor.exe").write_bytes(b"editor")
+    _ = (runtime_dir / "Game.exe").write_bytes(b"game")
+
+    tools = resolve_wolf_tool_paths()
+
+    assert is_wolf_runtime_dir(runtime_dir)
+    assert tools.runtime_dir == runtime_dir.resolve()
