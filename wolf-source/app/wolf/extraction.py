@@ -100,6 +100,8 @@ def extract_wolf_translation_data_map(
 
 
 def _extract_file_items(*, file: WolfDumpFile, text_rules: TextRules) -> list[TranslationItem]:
+    if file.section == "game":
+        return _extract_game_items(file=file, text_rules=text_rules)
     if file.section == "common":
         return _extract_common_items(file=file, text_rules=text_rules)
     if file.section == "mps":
@@ -107,6 +109,27 @@ def _extract_file_items(*, file: WolfDumpFile, text_rules: TextRules) -> list[Tr
     if file.section == "db":
         return _extract_db_items(file=file, text_rules=text_rules)
     return []
+
+
+def _extract_game_items(*, file: WolfDumpFile, text_rules: TextRules) -> list[TranslationItem]:
+    data = file.data
+    if not isinstance(data, dict):
+        return []
+    items: list[TranslationItem] = []
+    for key in ("Title", "TitlePlus", "StartUpMsg", "TitleMsg"):
+        value = data.get(key)
+        if not isinstance(value, str):
+            continue
+        item = _build_text_item(
+            file=file,
+            pointer=f"/{key}",
+            text=value,
+            role="game",
+            text_rules=text_rules,
+        )
+        if item is not None:
+            items.append(item)
+    return items
 
 
 def _extract_common_items(*, file: WolfDumpFile, text_rules: TextRules) -> list[TranslationItem]:

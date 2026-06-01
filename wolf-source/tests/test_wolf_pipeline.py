@@ -47,7 +47,7 @@ def test_wolf_best_practice_helpers_detect_version_and_archives(tmp_path: Path) 
 
 
 def _sample_dump(dump_dir: Path) -> None:
-    _write_json(dump_dir / "Game.json", {"title": "demo"})
+    _write_json(dump_dir / "Game.json", {"Title": "アイスハートとジャックオー", "TitlePlus": "", "StartUpMsg": "", "TitleMsg": ""})
     _write_json(
         dump_dir / "common" / "001.json",
         {
@@ -116,6 +116,7 @@ def test_wolftl_dump_extraction_keeps_runtime_strings_out_of_translation_scope(t
     originals = ["\n".join(item.original_lines) for item in items]
 
     assert "こんにちは\\s[9]君" in originals
+    assert "アイスハートとジャックオー" in originals
     assert "戦う" in originals
     assert "勝負する？" in originals
     assert "アイテムだけを表示します" in originals
