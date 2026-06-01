@@ -231,6 +231,8 @@ def _extract_db_items(*, file: WolfDumpFile, text_rules: TextRules) -> list[Tran
     data = file.data
     if not isinstance(data, dict):
         return []
+    if _is_runtime_database_file(file.relative_path):
+        return []
     types = data.get("types")
     if not isinstance(types, list):
         return []
@@ -382,6 +384,12 @@ def should_translate_wolf_text(*, text: str, text_rules: TextRules) -> bool:
 def _is_display_database_field(field_name: str) -> bool:
     normalized = field_name.strip()
     return any(keyword in normalized for keyword in DB_FIELD_KEYWORDS)
+
+
+def _is_runtime_database_file(relative_path: str) -> bool:
+    """Return whether a Wolf database file is usually used as runtime keys."""
+    normalized = relative_path.replace("\\", "/")
+    return normalized.endswith("/CDataBase.json") or normalized.endswith("/SysDatabase.json")
 
 
 def _display_name_for_file(file: WolfDumpFile) -> str | None:

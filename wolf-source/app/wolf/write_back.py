@@ -100,7 +100,15 @@ def _skip_wolf_write_back_item(*, section: str, location_path: str) -> bool:
     """Return whether a translated item is unsafe to write into Wolf data."""
     if section != "db":
         return False
+    _section, relative_path, _pointer = parse_location_path(location_path)
+    if _is_runtime_database_file(relative_path):
+        return True
     return bool(_DB_STRUCTURAL_POINTER_PATTERN.search(location_path))
+
+
+def _is_runtime_database_file(relative_path: str) -> bool:
+    normalized = relative_path.replace("\\", "/")
+    return normalized.endswith("/CDataBase.json") or normalized.endswith("/SysDatabase.json")
 
 
 __all__ = [

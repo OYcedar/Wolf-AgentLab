@@ -105,6 +105,18 @@ def _sample_dump(dump_dir: Path) -> None:
             ]
         },
     )
+    _write_json(
+        dump_dir / "db" / "CDataBase.json",
+        {
+            "types": [
+                {
+                    "name": "基本システム用変数",
+                    "fields": [{"name": "名前"}],
+                    "data": [{"name": "現在パーティー人数", "data": [{"name": "説明", "value": "内部キー"}]}],
+                }
+            ]
+        },
+    )
 
 
 def test_wolftl_dump_extraction_keeps_runtime_strings_out_of_translation_scope(tmp_path: Path) -> None:
@@ -124,6 +136,8 @@ def test_wolftl_dump_extraction_keeps_runtime_strings_out_of_translation_scope(t
     assert "アイテム" in originals
     assert "カフェイン値" in originals
     assert "眠気を下げる" in originals
+    assert "現在パーティー人数" not in originals
+    assert "内部キー" not in originals
     assert "終了" not in originals
     assert "神社打工小游戏" not in originals
     assert "X[戦]戦闘メッセージ表示" not in originals
@@ -171,6 +185,7 @@ def test_write_back_changes_only_safe_translation_strings(
     label_path = build_location_path("common", "common/001.json", "/commands/2/stringArgs/0")
     db_field_path = build_location_path("db", "db/DataBase.json", "/types/0/fields/0/name")
     db_value_path = build_location_path("db", "db/DataBase.json", "/types/0/data/0/name")
+    cdb_key_path = build_location_path("db", "db/CDataBase.json", "/types/0/data/0/name")
 
     def fake_patch(*, wolftl_path: Path, data_dir: Path, output_dir: Path) -> WolfTLRunResult:
         patched_data = output_dir / "patched" / "data"
@@ -212,17 +227,26 @@ def test_write_back_changes_only_safe_translation_strings(
                 source_line_paths=[db_value_path],
                 translation_lines=["咖啡因值"],
             ),
+            TranslationItem(
+                location_path=cdb_key_path,
+                item_type="short_text",
+                original_lines=["現在パーティー人数"],
+                source_line_paths=[cdb_key_path],
+                translation_lines=["当前队伍人数"],
+            ),
         ],
     )
 
     written = json.loads((workspace_dir / "translated_wolftl" / "dump" / "common" / "001.json").read_text(encoding="utf-8"))
     written_db = json.loads((workspace_dir / "translated_wolftl" / "dump" / "db" / "DataBase.json").read_text(encoding="utf-8"))
+    written_cdb = json.loads((workspace_dir / "translated_wolftl" / "dump" / "db" / "CDataBase.json").read_text(encoding="utf-8"))
     assert written["commands"][0]["stringArgs"][0] == "你好\\s[9]君"
     assert written["commands"][0]["intArgs"] == [1]
     assert written["commands"][2]["stringArgs"][0] == "終了"
     assert written["commands"][2]["intArgs"] == [3]
     assert written_db["types"][0]["fields"][0]["name"] == "説明"
     assert written_db["types"][0]["data"][0]["name"] == "咖啡因值"
+    assert written_cdb["types"][0]["data"][0]["name"] == "現在パーティー人数"
     assert result.written_item_count == 2
     assert result.restored_runtime_string_count == 0
 
