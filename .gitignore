@@ -13,6 +13,8 @@
 !/tools/README.md
 !/tools/wolf-runtime/
 !/tools/wolf-runtime/**
+!/tools/wolf-runtime-pro/
+!/tools/wolf-runtime-pro/**
 
 # Python and tooling caches
 __pycache__/

@@ -46,7 +46,8 @@ wolftl_path = ""
 uberwolf_path = ""
 wolfdec_path = ""
 # High-version WOLF Editor/Game directory used as the stable conversion/runtime base.
-# Empty means the repository-bundled G:\wolf\tools\wolf-runtime is used.
+# Empty means the repository-bundled G:\wolf\tools\wolf-runtime-pro is used,
+# then G:\wolf\tools\wolf-runtime is used as fallback.
 wolf_runtime_dir = ""
 
 [text_rules]

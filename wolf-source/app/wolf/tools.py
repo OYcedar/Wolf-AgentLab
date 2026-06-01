@@ -64,7 +64,7 @@ def resolve_wolf_tool_paths(setting: object | None = None) -> WolfToolPaths:
         runtime_dir=_resolve_runtime_dir(
             configured=_setting_path(tools_setting, "wolf_runtime_dir"),
             env_name=WOLF_RUNTIME_ENV_NAME,
-            default_names=("wolf-runtime", "wolf-rpg-editor", "WolfRPGEditor"),
+            default_names=("wolf-runtime-pro", "wolf-runtime", "wolf-rpg-editor", "WolfRPGEditor"),
         ),
     )
 

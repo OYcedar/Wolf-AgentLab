@@ -1,0 +1,5 @@
+runtime=wolf-runtime-pro
+source=G:\MY ver2.10
+editor_file_version=3.595.2025.503
+game_file_version=3.595.2025.503
+installed_at=2026-06-01T20:06:56.9412613+08:00

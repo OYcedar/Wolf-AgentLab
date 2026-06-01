@@ -101,3 +101,22 @@ def test_wolf_runtime_dir_resolves_from_tools_root(monkeypatch: pytest.MonkeyPat
 
     assert is_wolf_runtime_dir(runtime_dir)
     assert tools.runtime_dir == runtime_dir.resolve()
+
+
+def test_wolf_runtime_dir_prefers_bundled_pro_runtime(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """仓库同时带 Pro 和免费版时优先使用 Pro 运行库。"""
+    monkeypatch.setenv(runtime_paths.APP_HOME_ENV_NAME, str(tmp_path))
+    monkeypatch.delenv("ATT_WOLF_TOOLS", raising=False)
+    monkeypatch.delenv("ATT_WOLF_RUNTIME_DIR", raising=False)
+    pro_dir = tmp_path / "tools" / "wolf-runtime-pro"
+    free_dir = tmp_path / "tools" / "wolf-runtime"
+    pro_dir.mkdir(parents=True)
+    free_dir.mkdir(parents=True)
+    _ = (pro_dir / "EditorPro.exe").write_bytes(b"editor-pro")
+    _ = (pro_dir / "GamePro.exe").write_bytes(b"game-pro")
+    _ = (free_dir / "Editor.exe").write_bytes(b"editor")
+    _ = (free_dir / "Game.exe").write_bytes(b"game")
+
+    tools = resolve_wolf_tool_paths()
+
+    assert tools.runtime_dir == pro_dir.resolve()

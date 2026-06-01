@@ -8,11 +8,11 @@
 - `G:\wolf\game`：待翻译 Wolf 游戏。
 - `G:\wolf\workspace`：每个游戏的解包、WolfTL dump、翻译缓存和质量报告。
 - `G:\wolf\patches`：输出的独立汉化补丁。
-- `G:\wolf\tools`：放 `WolfTL.exe`、`UberWolf.exe`、`WolfDec.exe`，并随仓库固定高版本 WOLF 运行/编辑器目录 `wolf-runtime`。
+- `G:\wolf\tools`：放 `WolfTL.exe`、`UberWolf.exe`、`WolfDec.exe`，并随仓库固定高版本 WOLF Pro 目录 `wolf-runtime-pro` 和免费版目录 `wolf-runtime`。
 
 工具路径也可以写入 `setting.toml` 的 `[wolf_tools]`，或通过环境变量 `ATT_WOLF_WOLFTL_PATH`、`ATT_WOLF_UBERWOLF_PATH`、`ATT_WOLF_WOLFDEC_PATH`、`ATT_WOLF_RUNTIME_DIR` 指定。
 
-仓库内置的 `G:\wolf\tools\wolf-runtime` 固定为 WOLF RPG Editor `v3.703 mini`。如果你要使用 Pro 版，可以把 `wolf_runtime_dir` 或 `ATT_WOLF_RUNTIME_DIR` 指向含 `EditorPro.exe` / `GamePro.exe` 的目录。
+仓库内置的 `G:\wolf\tools\wolf-runtime-pro` 固定为 WOLF RPG Editor Pro `3.595.2025.503`，这是默认优先使用的转换/运行基底。`G:\wolf\tools\wolf-runtime` 另保留 WOLF RPG Editor `v3.703 mini` 作为 fallback。也可以用 `wolf_runtime_dir` 或 `ATT_WOLF_RUNTIME_DIR` 指向其他含 `EditorPro.exe` / `GamePro.exe` 的目录。
 
 ## 主流程
 
@@ -74,7 +74,7 @@ G:\wolf\att-wolf-auto.bat -GamePath "G:\wolf\game\<游戏目录>" -PrepareOnly
 
 1. 用原版 `Data.wolf` 重新解包出干净 `Data`。
 2. 把 `Data.wolf` 移出游戏目录，确保目录内不再有 `.wolf`。
-3. 从 `G:\wolf\tools\wolf-runtime` 复制高版本 `Game.exe` / `Editor.exe`，或使用已配置的 Pro 版 `GamePro.exe` / `EditorPro.exe`，之后一律用高版本运行器启动。
+3. 优先从 `G:\wolf\tools\wolf-runtime-pro` 复制高版本 `GamePro.exe` / `EditorPro.exe`；必要时再使用 `wolf-runtime` 的 `Game.exe` / `Editor.exe` fallback。之后一律用高版本运行器启动。
 4. 打开对应的高版本编辑器（`Editor.exe` 或 `EditorPro.exe`），依次确认风险提示、备份提示、开始转换提示，直到 `Backup_Before_Ver3\ConvertLog.txt` 出现并记录 `変換OK`。
 5. 转换完成后必须重新运行 WolfTL create，以“转换后的 Data”作为新的 dump 基底。
 6. 再把数据库里的译文写入这个新 dump，然后 WolfTL patch 回转换后的 `Data`。
