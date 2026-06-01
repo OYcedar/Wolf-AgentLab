@@ -31,6 +31,8 @@ uv run python main.py --agent-mode write-back --game "<游戏标题>" --json
 uv run python main.py --agent-mode make-patch --game "<游戏标题>" --json
 ```
 
+`write-back` 对 Wolf 游戏执行成功后会自动同步 `G:\wolf\patches\<游戏标题>`。原则是任何写入游戏目录的 `Data` 更新都必须同时反映到 patch；需要手工修复文件时，修完 `game` 后立刻运行 `make-patch`，不要只改其中一个目录。
+
 一键入口在 `G:\wolf`：
 
 ```powershell

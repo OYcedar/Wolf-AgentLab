@@ -125,6 +125,7 @@ from app.wolf.dec import require_prepared_wolf_game
 from app.wolf.extraction import extract_wolf_translation_data_map, wolf_default_placeholder_rules
 from app.wolf.layout import iter_wolf_archives
 from app.wolf.runtime_audit import audit_wolf_runtime_translations
+from app.wolf.service import sync_wolf_patch_dir
 from app.wolf.tools import resolve_wolf_tool_paths
 from app.wolf.wolftl import run_wolftl_create
 from app.wolf.write_back import write_wolf_translations
@@ -1084,6 +1085,11 @@ class TranslationHandler:
                 if target_data_dir.exists():
                     shutil.copytree(target_data_dir, backup_dir)
                 shutil.copytree(result.patched_data_dir, target_data_dir, dirs_exist_ok=True)
+                sync_wolf_patch_dir(
+                    game_dir=session.game_path,
+                    patch_name=prepared.workspace_dir.name,
+                    data_dir=target_data_dir,
+                )
                 set_progress(len(translated_items), len(translated_items))
                 return WriteBackSummary(
                     data_item_count=result.written_item_count,

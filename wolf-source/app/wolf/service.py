@@ -385,33 +385,18 @@ class WolfService:
                 summary={},
                 details={"expected_path": str(patched_data_dir)},
             )
-        patch_dir = resolve_wolf_patches_root() / prepared.workspace_dir.name
-        if patch_dir.exists():
-            shutil.rmtree(patch_dir)
-        shutil.copytree(patched_data_dir, patch_dir / "Data")
-        runtime_files: list[str] = []
-        for name in _WOLF_PRO_RUNTIME_FILES:
-            source = game_dir / name
-            if source.is_file():
-                shutil.copy2(source, patch_dir / name)
-                runtime_files.append(name)
-        if (patch_dir / "GamePro.exe").is_file():
-            shutil.copy2(patch_dir / "GamePro.exe", patch_dir / "Game.exe")
-            if "Game.exe" not in runtime_files:
-                runtime_files.append("Game.exe")
-        if (patch_dir / "GamePro.exe").is_file():
-            (patch_dir / "启动汉化版.bat").write_text(
-                '@echo off\r\ncd /d "%~dp0"\r\nstart "" Game.exe\r\n',
-                encoding="mbcs",
-            )
-        hardening = _harden_wolf_pro_runtime(patch_dir)
+        patch_result = sync_wolf_patch_dir(
+            game_dir=game_dir,
+            patch_name=prepared.workspace_dir.name,
+            data_dir=patched_data_dir,
+        )
         return AgentReport.from_parts(
             errors=[],
             warnings=[],
             summary={
-                "patch_dir": str(patch_dir),
-                "runtime_files": runtime_files,
-                "runtime_hardening": hardening,
+                "patch_dir": str(patch_result["patch_dir"]),
+                "runtime_files": patch_result["runtime_files"],
+                "runtime_hardening": patch_result["runtime_hardening"],
             },
             details={},
         )
@@ -562,6 +547,37 @@ _WOLF_PRO_RUNTIME_FILES = (
 )
 
 
+def sync_wolf_patch_dir(*, game_dir: Path, patch_name: str, data_dir: Path | None = None) -> dict[str, Any]:
+    """Synchronize a Wolf patch directory from the current game directory."""
+    source_data_dir = data_dir if data_dir is not None else game_dir / "Data"
+    if not source_data_dir.is_dir():
+        raise FileNotFoundError(f"Wolf Data directory not found: {source_data_dir}")
+    patch_dir = resolve_wolf_patches_root() / patch_name
+    if patch_dir.exists():
+        shutil.rmtree(patch_dir)
+    shutil.copytree(source_data_dir, patch_dir / "Data")
+    runtime_files: list[str] = []
+    for name in _WOLF_PRO_RUNTIME_FILES:
+        source = game_dir / name
+        if source.is_file():
+            shutil.copy2(source, patch_dir / name)
+            runtime_files.append(name)
+    if (patch_dir / "GamePro.exe").is_file():
+        shutil.copy2(patch_dir / "GamePro.exe", patch_dir / "Game.exe")
+        if "Game.exe" not in runtime_files:
+            runtime_files.append("Game.exe")
+        (patch_dir / "启动汉化版.bat").write_text(
+            '@echo off\r\ncd /d "%~dp0"\r\nstart "" Game.exe\r\n',
+            encoding="mbcs",
+        )
+    hardening = _harden_wolf_pro_runtime(patch_dir)
+    return {
+        "patch_dir": patch_dir,
+        "runtime_files": runtime_files,
+        "runtime_hardening": hardening,
+    }
+
+
 def _harden_wolf_pro_runtime(patch_dir: Path) -> dict[str, Any]:
     """Apply runtime settings proven necessary for Pro-converted Wolf patches."""
     changes: dict[str, Any] = {
@@ -654,4 +670,4 @@ def _search_translation_snippets(items: list[TranslationItem], snippets: list[st
     return {snippet: paths for snippet, paths in hits.items() if paths}
 
 
-__all__ = ["WolfService"]
+__all__ = ["WolfService", "sync_wolf_patch_dir"]
