@@ -60,6 +60,8 @@ def _sample_dump(dump_dir: Path) -> None:
                 {"code": 202, "codeStr": "JumpLabel", "stringArgs": ["終了"], "intArgs": [4], "index": 3},
                 {"code": 203, "codeStr": "CommonEventByName", "stringArgs": ["神社打工小游戏"], "intArgs": [5], "index": 4},
                 {"code": 204, "codeStr": "Picture", "stringArgs": ["Picture/hero.png", "ピクチャ番号"], "intArgs": [6], "index": 5},
+                {"code": 205, "codeStr": "SetString", "stringArgs": ["アイテムだけを表示します"], "intArgs": [7], "index": 6},
+                {"code": 206, "codeStr": "CommonEvent", "stringArgs": ["X[戦]戦闘メッセージ表示", "APが足りないっ！"], "intArgs": [8], "index": 7},
             ],
         },
     )
@@ -116,11 +118,14 @@ def test_wolftl_dump_extraction_keeps_runtime_strings_out_of_translation_scope(t
     assert "こんにちは\\s[9]君" in originals
     assert "戦う" in originals
     assert "勝負する？" in originals
+    assert "アイテムだけを表示します" in originals
+    assert "APが足りないっ！" in originals
     assert "アイテム" in originals
     assert "カフェイン値" in originals
     assert "眠気を下げる" in originals
     assert "終了" not in originals
     assert "神社打工小游戏" not in originals
+    assert "X[戦]戦闘メッセージ表示" not in originals
     assert "Picture/hero.png" not in originals
     assert all("intArgs" not in item.location_path for item in items)
 

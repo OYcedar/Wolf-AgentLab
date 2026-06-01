@@ -17,6 +17,7 @@ from app.wolf.dump_loader import (
 )
 
 DIALOGUE_COMMANDS = {"Message", "Choices"}
+VISIBLE_STRING_COMMANDS = {"SetString"}
 RUNTIME_COMMANDS = {
     "SetLabel",
     "JumpLabel",
@@ -169,7 +170,7 @@ def _extract_command_list_items(
         code_str = str(command.get("codeStr", ""))
         if code_str in RUNTIME_COMMANDS:
             continue
-        if code_str not in DIALOGUE_COMMANDS:
+        if code_str not in DIALOGUE_COMMANDS and code_str not in VISIBLE_STRING_COMMANDS and code_str != "CommonEvent":
             continue
         string_args = command.get("stringArgs")
         if not isinstance(string_args, list):
@@ -177,8 +178,10 @@ def _extract_command_list_items(
         for arg_index, value in enumerate(string_args):
             if not isinstance(value, str):
                 continue
+            if code_str == "CommonEvent" and arg_index == 0:
+                continue
             pointer = f"{base_pointer}/{command_index}/stringArgs/{arg_index}"
-            role = "choice" if code_str == "Choices" else None
+            role = _role_for_command_string(code_str=code_str, arg_index=arg_index)
             item = _build_text_item(
                 file=file,
                 pointer=pointer,
@@ -189,6 +192,16 @@ def _extract_command_list_items(
             if item is not None:
                 items.append(item)
     return items
+
+
+def _role_for_command_string(*, code_str: str, arg_index: int) -> str | None:
+    if code_str == "Choices":
+        return "choice"
+    if code_str == "SetString":
+        return "variable_text"
+    if code_str == "CommonEvent" and arg_index > 0:
+        return "common_event_text"
+    return None
 
 
 def _extract_db_items(*, file: WolfDumpFile, text_rules: TextRules) -> list[TranslationItem]:
@@ -359,6 +372,7 @@ def _display_name_for_file(file: WolfDumpFile) -> str | None:
 
 __all__ = [
     "RUNTIME_COMMANDS",
+    "VISIBLE_STRING_COMMANDS",
     "WOLF_DEFAULT_PLACEHOLDER_RULES",
     "extract_wolf_translation_data_map",
     "should_translate_wolf_text",
